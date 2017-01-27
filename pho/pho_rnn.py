@@ -142,7 +142,7 @@ np.random.shuffle(indices)
 X_train = X_train[indices]
 y_train = y_train[indices]
 
-#MATRIX DIMENSIONS REDUCED TO 20*BATCH_SIZE
+# ---MATRIX DIMENSIONS REDUCED TO 20*BATCH_SIZE----
 
 X_train = X_train[:20*BATCH_SIZE]
 y_train = y_train[:20*BATCH_SIZE]
@@ -150,6 +150,7 @@ y_train = y_train[:20*BATCH_SIZE]
 X_val = X_val[:20*BATCH_SIZE]
 y_val = y_val[:20*BATCH_SIZE]
 
+# -------------------------------------------------
 
 print(X_train.shape)
 print(y_train.shape)
@@ -171,10 +172,22 @@ model.add(Activation('softmax'))
 model.summary()
 #plot(model, show_shapes=True, to_file='pho_rnn.png', show_layer_names=False)
 
-adam_opt = Adam() #keras.io
+opt = 'Adam'
+lr = 0.001
+lr_str = str(lr)
+
+if opt == 'Adam':
+	use_opt = Adam(lr)
+	# Default -> keras.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+elif opt == 'SGD':
+	use_opt = SGD()
+	# Default -> keras.optimizers.SGD(lr=0.01, momentum=0.0, decay=0.0, nesterov=False)
+elif opt == 'RMSprop':
+	use_opt = RMSprop()
+	# Default -> keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0)
 
 model.compile(loss='sparse_categorical_crossentropy',
-              optimizer=adam_opt,
+              optimizer=use_opt,
               metrics=['accuracy'])
 
 def save(refs, preds, filename):
@@ -189,7 +202,8 @@ tr_loss = []
 val_loss = []
 tr_acc = []
 val_acc  = []
-name_opt = ''
+eixos = range (1,5)
+
 
 for iteration in range(1, 5): #ORIGINAL: 120
     print()
@@ -226,17 +240,23 @@ for iteration in range(1, 5): #ORIGINAL: 120
 np.savetxt('tr_losses.txt', tr_loss)
 np.savetxt('val_losses.txt', val_loss)
 plt.figure(1)
-plt.plot(tr_loss, 'b', label=tr, val_loss,'r', label=val)
+plt.plot(eixos,tr_loss, 'b',eixos,val_loss,'r')
+plt.legend(['tr','val'])
 plt.xlabel('Epoch')
-plt.ylabel('losses')
-plt.title('Tr & val loss'+ name_opt)
+plt.ylabel('Losses')
+plt.title('Train & Val loss '+ opt)
+plt.savefig('loss_' + opt + '_LR' + lr_str + '.png')
+
 np.savetxt('tr_acc.txt', tr_acc)
 np.savetxt('val_acc.txt', val_acc)
 plt.figure(2)
-plt.plot(tr_acc, 'b',val_acc,'r')
+plt.plot(eixos,tr_acc, 'b',eixos,val_acc,'r')
+plt.legend(['tr','val'])
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
-plt.title('Training & validation accuracy'+ name_opt)
+plt.title('Train & Val accuracy '+ opt)
+plt.savefig('acc_'+ opt + '_LR' + lr_str + '.png')
+
 plt.show()
 
 #with open("loss_test.txt", "w") as text_file:
