@@ -13,9 +13,11 @@ Theoretically it introduces shorter term dependencies between source and target.
 '''
 
 from __future__ import print_function
-from keras.utils.visualize_util import plot
+# from keras.utils.visualize_util import plot
 from keras.models import Sequential
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent, Embedding, Reshape
+from keras.optimizers import Adam
+import matplotlib.pyplot as plt
 import numpy as np
 from six.moves import range
 
@@ -140,6 +142,15 @@ np.random.shuffle(indices)
 X_train = X_train[indices]
 y_train = y_train[indices]
 
+#MATRIX DIMENSIONS REDUCED TO 20*BATCH_SIZE
+
+X_train = X_train[:20*BATCH_SIZE]
+y_train = y_train[:20*BATCH_SIZE]
+
+X_val = X_val[:20*BATCH_SIZE]
+y_val = y_val[:20*BATCH_SIZE]
+
+
 print(X_train.shape)
 print(y_train.shape)
 
@@ -158,10 +169,12 @@ for _ in range(LAYERS):
 model.add(TimeDistributed(Dense(ptable.size)))
 model.add(Activation('softmax'))
 model.summary()
-plot(model, show_shapes=True, to_file='pho_rnn.png', show_layer_names=False)
+#plot(model, show_shapes=True, to_file='pho_rnn.png', show_layer_names=False)
+
+adam_opt = Adam() #keras.io
 
 model.compile(loss='sparse_categorical_crossentropy',
-              optimizer='adam',
+              optimizer=adam_opt,
               metrics=['accuracy'])
 
 def save(refs, preds, filename):
@@ -172,12 +185,25 @@ def save(refs, preds, filename):
             print(correct, '|', guess, file=res)
 
 # Train the model each generation and show predictions against the validation dataset
-for iteration in range(1, 120):
+tr_loss = []
+val_loss = []
+tr_acc = []
+val_acc  = []
+name_opt = ''
+
+for iteration in range(1, 5): #ORIGINAL: 120
     print()
     print('-' * 50)
     print('Iteration', iteration)
-    model.fit(X_train, y_train[..., np.newaxis], batch_size=BATCH_SIZE, nb_epoch=1,
+    history = model.fit(X_train, y_train[..., np.newaxis], batch_size=BATCH_SIZE, nb_epoch=1,
               validation_data=(X_val, y_val[..., np.newaxis])) # add a new dim to y_train and y_val to match output
+
+    tr_loss.extend(history.history['loss']) #list of loss values for baches in one epoch
+    val_loss.extend(history.history['val_loss'])
+    tr_acc.extend(history.history['acc'])
+    val_acc.extend(history.history['val_acc'])
+
+    print
     preds = model.predict_classes(X_val, verbose=0)
     save(y_val, preds, 'rnn_{}.pred'.format(iteration))
 
@@ -195,3 +221,35 @@ for iteration in range(1, 120):
         print(colors.ok + '☑' + colors.close if correct == guess else colors.fail + '☒' + colors.close, 
               guess, '(' + str(levenshtein(correct.split(), guess.split())) + ')')
         print('---')
+
+##############
+np.savetxt('tr_losses.txt', tr_loss)
+np.savetxt('val_losses.txt', val_loss)
+plt.figure(1)
+plt.plot(tr_loss, 'b', label=tr, val_loss,'r', label=val)
+plt.xlabel('Epoch')
+plt.ylabel('losses')
+plt.title('Tr & val loss'+ name_opt)
+np.savetxt('tr_acc.txt', tr_acc)
+np.savetxt('val_acc.txt', val_acc)
+plt.figure(2)
+plt.plot(tr_acc, 'b',val_acc,'r')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.title('Training & validation accuracy'+ name_opt)
+plt.show()
+
+#with open("loss_test.txt", "w") as text_file:
+#    text_file.write(str(tr_loss))
+# ordre per escriureho a un excel o el que sigui
+# llibreria numphy savetxt()
+#devdocs.io --> documentation
+
+##·· PARAMETERS TO PLAY WITH
+#compile(optimizer,metrics=None)
+#OPTIMIZER --> Adam
+#SGD
+# from history object -> val_loss. history[val_loss]-> guardarla en una llista apart
+# inestable -> learning rate is too high
+# batch_size smaller -> noisier
+# batch_size higher -> smoother	
