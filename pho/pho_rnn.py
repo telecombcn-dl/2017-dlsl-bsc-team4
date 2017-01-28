@@ -142,6 +142,8 @@ np.random.shuffle(indices)
 X_train = X_train[indices]
 y_train = y_train[indices]
 
+matrix_dimension = 'reduced' #write 'original' when the matrix dimensions arent reduced
+
 # ---MATRIX DIMENSIONS REDUCED TO 20*BATCH_SIZE----
 
 X_train = X_train[:20*BATCH_SIZE]
@@ -246,7 +248,7 @@ plt.legend(['tr','val'])
 plt.xlabel('Epoch')
 plt.ylabel('Losses')
 plt.title('Train & Val loss '+ opt)
-plt.savefig('loss_' + opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '.png')
+plt.savefig('loss_' + opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '_MxD-' + matrix_dimension + '.png')
 
 np.savetxt('tr_acc.txt', tr_acc)
 np.savetxt('val_acc.txt', val_acc)
@@ -256,7 +258,7 @@ plt.legend(['tr','val'])
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('Train & Val accuracy '+ opt)
-plt.savefig('acc_'+ opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '.png')
+plt.savefig('acc_'+ opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '_MxD-' + matrix_dimension + '.png')
 
 plt.show()
 
