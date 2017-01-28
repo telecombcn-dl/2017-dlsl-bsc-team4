@@ -174,7 +174,7 @@ model.summary()
 
 opt = 'Adam'
 lr = 0.001
-lr_str = str(lr)
+#lr_str = str(lr)
 
 if opt == 'Adam':
 	use_opt = Adam(lr)
@@ -202,8 +202,8 @@ tr_loss = []
 val_loss = []
 tr_acc = []
 val_acc  = []
-eixos = range (1,5)
-
+rang = range (1,5)
+num_epochs = 0
 
 for iteration in range(1, 5): #ORIGINAL: 120
     print()
@@ -216,6 +216,7 @@ for iteration in range(1, 5): #ORIGINAL: 120
     val_loss.extend(history.history['val_loss'])
     tr_acc.extend(history.history['acc'])
     val_acc.extend(history.history['val_acc'])
+    num_epochs = num_epochs + 1
 
     print
     preds = model.predict_classes(X_val, verbose=0)
@@ -240,22 +241,22 @@ for iteration in range(1, 5): #ORIGINAL: 120
 np.savetxt('tr_losses.txt', tr_loss)
 np.savetxt('val_losses.txt', val_loss)
 plt.figure(1)
-plt.plot(eixos,tr_loss, 'b',eixos,val_loss,'r')
+plt.plot(rang,tr_loss, 'b',rang,val_loss,'r')
 plt.legend(['tr','val'])
 plt.xlabel('Epoch')
 plt.ylabel('Losses')
 plt.title('Train & Val loss '+ opt)
-plt.savefig('loss_' + opt + '_LR' + lr_str + '.png')
+plt.savefig('loss_' + opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '.png')
 
 np.savetxt('tr_acc.txt', tr_acc)
 np.savetxt('val_acc.txt', val_acc)
 plt.figure(2)
-plt.plot(eixos,tr_acc, 'b',eixos,val_acc,'r')
+plt.plot(rang,tr_acc, 'b',rang,val_acc,'r')
 plt.legend(['tr','val'])
 plt.xlabel('Epoch')
 plt.ylabel('Accuracy')
 plt.title('Train & Val accuracy '+ opt)
-plt.savefig('acc_'+ opt + '_LR' + lr_str + '.png')
+plt.savefig('acc_'+ opt + '_epoch' + str(num_epochs) + '_LR' + str(lr) + '_Batch' + str(BATCH_SIZE) + '.png')
 
 plt.show()
 
